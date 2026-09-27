@@ -1,6 +1,6 @@
 # Jarkko
 
-Interfaz de escritorio de Jarkko. La esfera azul y verde ocupa el centro de la pantalla; la navegación y la conversación se abren al pulsar los controles de los bordes. El remolino central permanece estable mientras dos pequeños satélites recorren lentamente sus órbitas.
+Interfaz de escritorio de Jarkko. La esfera azul y verde ocupa el centro de la pantalla; la navegación y la conversación se abren al pulsar los controles de los bordes. Cuatro satélites visibles recorren lentamente la órbita. Al activar el micro, la esfera cambia suavemente de forma y aumenta su brillo.
 
 ## Aplicación lista para Windows
 

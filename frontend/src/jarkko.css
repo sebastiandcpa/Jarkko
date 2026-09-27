@@ -421,20 +421,27 @@
 }
 .jarkko-orb__satellite--blue {
   color: #48c8ff;
-  filter: drop-shadow(0 0 7px #4fbfff);
+  filter: drop-shadow(0 0 14px #4fbfff);
 }
 .jarkko-orb__satellite--green {
   color: #52f4bf;
-  filter: drop-shadow(0 0 7px #52f4bf);
+  filter: drop-shadow(0 0 14px #52f4bf);
 }
 .jarkko-orb__satellite-glow {
   fill: currentColor;
-  opacity: 0.12;
+  opacity: 0.18;
 }
-.jarkko-orb__satellite-core {
-  fill: #e4ffff;
+.jarkko-orb__satellite-shell {
+  fill: url(#satellite-green);
   stroke: currentColor;
-  stroke-width: 4;
+  stroke-width: 3;
+}
+.jarkko-orb__satellite--blue .jarkko-orb__satellite-shell {
+  fill: url(#satellite-blue);
+}
+.jarkko-orb__satellite-shine {
+  fill: #ffffff;
+  opacity: 0.95;
 }
 .jarkko-orb__aura {
   position: absolute;
@@ -456,6 +463,30 @@
   border-radius: 50%;
   border: 1px solid transparent;
   pointer-events: none;
+}
+.jarkko-orb__voice-shape {
+  position: absolute;
+  z-index: 2;
+  inset: 14%;
+  pointer-events: none;
+  opacity: 0;
+  border: 2px solid rgba(121, 255, 231, 0.68);
+  border-radius: 50%;
+  box-shadow:
+    0 0 30px rgba(73, 251, 209, 0.48),
+    inset 0 0 34px rgba(60, 216, 245, 0.28);
+  transition: opacity 0.35s ease;
+}
+.jarkko-orb--listening {
+  animation: jarkko-listening-morph 5.4s ease-in-out infinite alternate;
+  filter: drop-shadow(0 0 42px rgba(52, 237, 216, 0.54));
+}
+.jarkko-orb--listening .jarkko-orb__voice-shape {
+  opacity: 1;
+  animation: jarkko-energy-shape 5.4s ease-in-out infinite alternate;
+}
+.jarkko-orb--listening img {
+  filter: brightness(1.14) saturate(1.15);
 }
 .jarkko-orb--listening .jarkko-orb__response {
   border-color: rgba(88, 239, 224, 0.35);
@@ -482,6 +513,25 @@
   to {
     opacity: 0.68;
     transform: scale(1.025);
+  }
+}
+@keyframes jarkko-listening-morph {
+  0% {
+    transform: scaleX(1.015) scaleY(0.99);
+  }
+  50% {
+    transform: scaleX(1.075) scaleY(0.955);
+  }
+  100% {
+    transform: scaleX(0.965) scaleY(1.055);
+  }
+}
+@keyframes jarkko-energy-shape {
+  0% {
+    border-radius: 47% 53% 51% 49% / 51% 46% 54% 49%;
+  }
+  100% {
+    border-radius: 55% 45% 47% 53% / 45% 55% 49% 51%;
   }
 }
 
