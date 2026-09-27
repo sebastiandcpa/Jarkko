@@ -1,7 +1,7 @@
 const { app, BrowserWindow } = require("electron");
 const path = require("node:path");
 
-const appId = "com.sebastiandcpa.jarvisekko";
+const appId = "com.sebastiandcpa.jarkko";
 app.setAppUserModelId(appId);
 
 function createWindow() {
@@ -11,7 +11,7 @@ function createWindow() {
     minWidth: 900,
     minHeight: 650,
     show: false,
-    title: "JARVIS · EKKO",
+    title: "JARKKO",
     backgroundColor: "#071018",
     autoHideMenuBar: true,
     webPreferences: {

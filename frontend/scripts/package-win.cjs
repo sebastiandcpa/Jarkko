@@ -9,9 +9,8 @@ if (process.platform !== 'win32' || process.arch !== 'x64') {
 
 const root = path.resolve(__dirname, '..');
 const release = path.join(root, 'release');
-const portable = path.join(release, 'Jarvis Ekko');
+const portable = path.join(release, 'Jarkko');
 const stage = path.join(release, '.app-stage');
-const zip = path.join(release, 'Jarvis-Ekko-0.2.0-Windows-x64.zip');
 const electron = path.join(root, 'node_modules', 'electron');
 const runtime = path.join(electron, 'dist');
 
@@ -42,17 +41,15 @@ async function main() {
   fs.cpSync(path.join(root, 'electron'), path.join(stage, 'electron'), { recursive: true });
   fs.writeFileSync(
     path.join(stage, 'package.json'),
-    JSON.stringify({ name: 'jarvis-ekko', version: '0.2.0', main: 'electron/main.cjs' }),
+    JSON.stringify({ name: 'jarkko', version: '0.3.0', main: 'electron/main.cjs' }),
   );
 
   const resources = path.join(portable, 'resources');
   fs.rmSync(path.join(resources, 'default_app.asar'), { force: true });
   await createPackage(stage, path.join(resources, 'app.asar'));
-  fs.renameSync(path.join(portable, 'electron.exe'), path.join(portable, 'Jarvis Ekko.exe'));
+  fs.renameSync(path.join(portable, 'electron.exe'), path.join(portable, 'Jarkko.exe'));
   fs.rmSync(stage, { recursive: true, force: true });
-  fs.rmSync(zip, { force: true });
-  execFileSync('tar.exe', ['-a', '-c', '-f', zip, '-C', release, 'Jarvis Ekko'], { stdio: 'inherit' });
-  console.log(`Paquete listo: ${zip}`);
+  console.log(`Aplicación lista: ${path.join(portable, 'Jarkko.exe')}`);
 }
 
 main().catch((error) => {

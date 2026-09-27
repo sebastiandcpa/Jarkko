@@ -8,6 +8,7 @@ import "@fontsource/inter/latin-700.css";
 import "@fontsource/dm-sans/latin-400.css";
 import "@fontsource/dm-sans/latin-500.css";
 import "./styles.css";
+import "./jarkko.css";
 ReactDOM.createRoot(document.getElementById("root")!).render(
   <React.StrictMode>
     <App />

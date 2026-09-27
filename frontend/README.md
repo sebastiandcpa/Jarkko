@@ -1,8 +1,8 @@
-# Interfaz JARVIS · EKKO
+# Jarkko
 
-Aplicación de escritorio con dos identidades visuales basadas en las referencias del proyecto: JARVIS en azul y EKKO en verde. La pantalla de inicio incorpora escenas, orbe animado, acciones rápidas, estado del sistema y conversación lateral. Las otras pantallas comparten navegación y componentes.
+Interfaz de escritorio de Jarkko. La esfera azul y verde ocupa el centro de la pantalla; la navegación y la conversación se abren al pulsar los controles de los bordes. El remolino central permanece estable mientras dos pequeños satélites recorren lentamente sus órbitas.
 
-## Paquete portátil de Windows
+## Aplicación lista para Windows
 
 En Windows x64, desde esta carpeta:
 
@@ -11,7 +11,7 @@ npm install
 npm run package:win
 ```
 
-El comando genera `release/Jarvis-Ekko-0.2.0-Windows-x64.zip`. La persona destinataria solo debe descomprimirlo y ejecutar `Jarvis Ekko/Jarvis Ekko.exe`. No necesita instalar Node.js, Python ni un IDE. El ZIP incluye el runtime de Electron y todos los archivos visuales. Debe conservar la carpeta completa.
+El comando genera la carpeta `release/Jarkko/`, con `Jarkko.exe` y los archivos que necesita. Para usarla en otro equipo Windows x64, copia **toda la carpeta Jarkko**, ábrela y haz doble clic en `Jarkko.exe`. No hace falta instalar un IDE, Node.js ni Python para ejecutar la interfaz. El proyecto ya no genera un ZIP.
 
 ## Desarrollo
 
@@ -20,16 +20,16 @@ Requiere Node.js. `npm run dev` inicia la interfaz en `http://127.0.0.1:5173`. `
 ## Estructura
 
 - `src/app/App.tsx`: navegación, estado compartido y pantallas.
-- `src/components/Orb.tsx`: orbe animado.
-- `src/styles.css`: temas, composición, animación y tamaños de ventana.
-- `src/assets/`: escenas de JARVIS y EKKO.
+- `src/components/JarkkoOrb.tsx`: esfera principal.
+- `src/jarkko.css`: composición de Jarkko y tamaños de ventana.
+- `src/assets/`: sala y esfera de Jarkko.
 - `src/mock/data.ts`: conversación, tareas, archivos, herramientas y actividad de muestra.
 - `src/services/api.ts`: endpoints HTTP con respaldo de datos de muestra.
 - `electron/main.cjs`: ventana de escritorio y límites de navegación.
-- `scripts/package-win.cjs`: ensamblado y ZIP portátil para Windows x64.
+- `scripts/package-win.cjs`: ensamblado de la carpeta portátil para Windows x64.
 
 ## Estado funcional
 
-Puedes navegar, enviar mensajes de prueba, cambiar estados de tareas, buscar en datos de muestra, confirmar acciones simuladas y cambiar entre JARVIS y EKKO. La identidad elegida se guarda localmente.
+Puedes navegar, enviar mensajes de prueba, cambiar estados de tareas, buscar en datos de muestra y confirmar acciones simuladas.
 
-El ZIP abre la interfaz completa, pero aún no controla el PC, reconoce voz ni conecta un modelo de IA real. El directorio `../backend` contiene trabajo en curso y no está incluido en el paquete portátil. La interfaz usa datos de muestra por defecto. Existe una capa HTTP prevista para un servicio local en `http://127.0.0.1:8765`; cuando ese servicio esté listo se podrán integrar acciones reales con sus permisos correspondientes.
+La carpeta portátil abre la interfaz completa, pero aún no controla el PC, reconoce voz ni conecta un modelo de IA real. El directorio `../backend` contiene trabajo en curso y no está incluido en la aplicación portátil. La interfaz usa datos de muestra por defecto. Existe una capa HTTP prevista para un servicio local en `http://127.0.0.1:8765`; cuando ese servicio esté listo se podrán integrar acciones reales con sus permisos correspondientes.

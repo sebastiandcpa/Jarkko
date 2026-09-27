@@ -1,18 +1,18 @@
-# JARVIS · EKKO
+# Jarkko
 
-Asistente de escritorio con dos identidades visuales: JARVIS (azul, ciudad nocturna) y EKKO (verde, entorno natural). Incluye navegación, conversación, tareas, archivos, calendario, conocimiento, herramientas, actividad y configuración.
+Asistente de escritorio con una sola identidad visual. La esfera azul y verde es el centro de la pantalla; los paneles de navegación y conversación aparecen al pulsar sus controles laterales.
 
 ## Abrir en Windows sin instalar nada
 
-Descarga `Jarvis-Ekko-0.2.0-Windows-x64.zip`, descomprímelo y haz doble clic en `Jarvis Ekko/Jarvis Ekko.exe`. La otra persona no necesita Node.js, Python ni un IDE. Conserva toda la carpeta descomprimida junto al ejecutable.
+La aplicación preparada está en `frontend/release/Jarkko/Jarkko.exe`. Para compartirla, copia **la carpeta `Jarkko` completa** a otro equipo Windows x64. La otra persona abre esa carpeta y ejecuta `Jarkko.exe` con doble clic. No necesita un IDE, Node.js ni Python. El ejecutable debe permanecer junto a los demás archivos de su carpeta.
 
-El ZIP contiene la interfaz de escritorio. Las respuestas y los datos son de muestra mientras no se conecte un servicio local. El reconocimiento de voz y las acciones sobre el equipo todavía no están habilitados en este paquete.
+No se crea un ZIP. La interfaz portátil usa datos de muestra: el servicio local de `backend/` todavía no está integrado en el ejecutable y el control real del equipo o por voz no está disponible.
 
 ## Código fuente
 
-- `frontend/`: interfaz React, diseño JARVIS/EKKO y contenedor Electron.
-- `backend/`: trabajo en curso para el servicio local; no se incluye ni se ejecuta en el ZIP portátil.
+- `frontend/`: interfaz React y aplicación Electron.
+- `backend/`: servicio local en desarrollo.
 
-Para desarrollar la interfaz se necesita Node.js. En `frontend/`, ejecuta `npm install` y `npm run dev`. Para regenerar el ZIP en Windows x64, ejecuta `npm run package:win`; el resultado aparece en `frontend/release/`.
+Para desarrollar la interfaz se necesita Node.js. En `frontend/`, ejecuta `npm install` y `npm run dev`. Para reconstruir la carpeta de Windows x64, ejecuta `npm run package:win`; el resultado aparece en `frontend/release/Jarkko/`.
 
 Consulta `frontend/README.md` para la estructura y las funciones actuales.

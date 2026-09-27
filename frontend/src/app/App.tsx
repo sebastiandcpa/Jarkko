@@ -7,7 +7,6 @@ import {
   CalendarDays,
   Check,
   CheckCircle2,
-  ChevronDown,
   ChevronRight,
   Clock3,
   Command,
@@ -22,7 +21,6 @@ import {
   LayoutGrid,
   Menu,
   Mic,
-  MoreHorizontal,
   MoveRight,
   Plus,
   Search,
@@ -53,6 +51,7 @@ import type {
   Task,
 } from "../types";
 import { Orb } from "../components/Orb";
+import { JarkkoOrb } from "../components/JarkkoOrb";
 import {
   PageHeader,
   SearchField,
@@ -104,13 +103,11 @@ const bars = Array.from(
 );
 export function App() {
   const [clock, setClock] = useState(() => new Date());
-  const [assistant, setAssistantState] = useState<Assistant>(() =>
-    localStorage.getItem("jarvis-ekko-assistant") === "ekko"
-      ? "ekko"
-      : "jarvis",
-  );
+  const assistant: Assistant = "jarvis";
+  const brand = "JARKKO";
   const [page, setPage] = useState<Page>("home");
-  const [railExpanded, setRailExpanded] = useState(false);
+  const [leftOpen, setLeftOpen] = useState(false);
+  const [rightOpen, setRightOpen] = useState(false);
   const [status, setStatus] = useState<AssistantStatus>("idle");
   const [messages, setMessages] = useState<Message[]>(initialMessages);
   const [activity, setActivity] = useState<ActivityItem[]>(initialActivity);
@@ -133,18 +130,8 @@ export function App() {
     online: true,
   });
   const feedRef = useRef<HTMLDivElement>(null);
-  const ekko = assistant === "ekko";
-  const displayMessage = (message: Message) => {
-    if (!ekko) return message.text;
-    if (message.id === "m1") return "Organiza mis archivos de la semana y muéstrame un resumen.";
-    if (message.id === "m2") return "He encontrado 12 archivos relevantes de esta semana. Puedes revisar el resumen antes de organizarlos.";
-    return message.text;
-  };
-  const setAssistant = (value: Assistant) => {
-    setAssistantState(value);
-    localStorage.setItem("jarvis-ekko-assistant", value);
-    setStatus("idle");
-  };
+  const ekko = false;
+  const displayMessage = (message: Message) => message.text;
   const addActivity = (
     title: string,
     detail: string,
@@ -156,9 +143,22 @@ export function App() {
     ]);
   const showNotice = (text: string) => setNotice(text);
   useEffect(() => {
-    document.documentElement.dataset.assistant = assistant;
-  }, [assistant]);
-  useEffect(() => { const timer = window.setInterval(() => setClock(new Date()), 30000); return () => window.clearInterval(timer) }, []);
+    document.documentElement.dataset.assistant = "jarkko";
+  }, []);
+  useEffect(() => {
+    const timer = window.setInterval(() => setClock(new Date()), 30000);
+    return () => window.clearInterval(timer);
+  }, []);
+  useEffect(() => {
+    const onEscape = (event: KeyboardEvent) => {
+      if (event.key === "Escape") {
+        setLeftOpen(false);
+        setRightOpen(false);
+      }
+    };
+    window.addEventListener("keydown", onEscape);
+    return () => window.removeEventListener("keydown", onEscape);
+  }, []);
   useEffect(() => {
     if (!notice) return;
     const timer = window.setTimeout(() => setNotice(""), 3600);
@@ -281,10 +281,7 @@ export function App() {
     <div className="app-shell" data-page={page}>
       <header className="titlebar">
         <div className="title-brand">
-          <span className="brand-glyph">
-            <span />
-          </span>
-          <strong>{assistant.toUpperCase()}</strong>
+          <strong>{brand}</strong>
           <span className="title-divider" />
           <span className="title-descriptor">Asistente de escritorio</span>
         </div>
@@ -302,14 +299,6 @@ export function App() {
         </div>
         <div className="title-actions">
           <button
-            className="quick-switch"
-            onClick={() => setAssistant(ekko ? "jarvis" : "ekko")}
-            title="Cambiar entre JARVIS y EKKO"
-          >
-            {assistant.toUpperCase()}
-            <ChevronDown size={13} />
-          </button>
-          <button
             className="title-icon"
             aria-label="Abrir actividad"
             onClick={() => setPage("activity")}
@@ -318,112 +307,173 @@ export function App() {
           </button>
         </div>
       </header>
+      <button
+        className="edge-control edge-control-left"
+        aria-label="Abrir navegación"
+        aria-expanded={leftOpen}
+        onClick={() => {
+          setLeftOpen(true);
+          setRightOpen(false);
+        }}
+      >
+        {page === "home" ? (
+          <>
+            <span className="edge-ring" />
+            <span className="edge-dots">
+              <i />
+              <i />
+              <i />
+            </span>
+          </>
+        ) : (
+          <Menu size={21} />
+        )}
+      </button>
+      <button
+        className="edge-control edge-control-right"
+        aria-label="Abrir conversación"
+        aria-expanded={rightOpen}
+        onClick={() => {
+          setRightOpen(true);
+          setLeftOpen(false);
+        }}
+      >
+        {page === "home" ? (
+          <>
+            <span className="edge-ring edge-ring-inner" />
+            <span className="edge-dots">
+              <i />
+              <i />
+              <i />
+            </span>
+          </>
+        ) : (
+          <Command size={21} />
+        )}
+      </button>
+      {(leftOpen || rightOpen) && (
+        <button
+          className="panel-scrim"
+          aria-label="Cerrar paneles"
+          onClick={() => {
+            setLeftOpen(false);
+            setRightOpen(false);
+          }}
+        />
+      )}
       <div className="main-frame">
-        <aside className={"sidebar" + (railExpanded ? " expanded" : "")}>
-          <button className="rail-menu" aria-label={railExpanded ? "Contraer menú" : "Expandir menú"} aria-expanded={railExpanded} onClick={() => setRailExpanded(!railExpanded)}><Menu size={19}/></button><span className="sidebar-label">ESPACIO DE TRABAJO</span>
-          <nav aria-label="Navegación principal">
-            {nav.map(({ id: target, label, icon: Icon }) => (
-              <button
-                key={target}
-                className={"nav-item" + (page === target ? " active" : "")}
-                aria-label={label}
-                onClick={() => setPage(target)}
-              >
-                <Icon size={17} strokeWidth={1.8} />
-                <span>{label}</span>
-                {page === target && <i />}
-              </button>
-            ))}
-          </nav>
-          <div className="sidebar-spacer" />
-          <div className="sidebar-bottom">
-            <div className="sidebar-rule" />
+        {leftOpen && (
+          <aside className="sidebar expanded">
             <button
-              className={"nav-item" + (page === "activity" ? " active" : "")}
-              aria-label="Actividad"
-              onClick={() => setPage("activity")}
+              className="rail-menu"
+              aria-label="Cerrar navegación"
+              onClick={() => setLeftOpen(false)}
             >
-              <Activity size={17} />
-              <span>Actividad</span>
-              <em>{activity.length}</em>
+              <X size={19} />
             </button>
-            <button
-              className={"nav-item" + (page === "settings" ? " active" : "")}
-              aria-label="Configuración"
-              onClick={() => setPage("settings")}
-            >
-              <Settings2 size={17} />
-              <span>Configuración</span>
-            </button>
-            <div className="sidebar-presence">
-              <span className="presence-light" />
+            <span className="sidebar-label">ESPACIO DE TRABAJO</span>
+            <nav aria-label="Navegación principal">
+              {nav.map(({ id: target, label, icon: Icon }) => (
+                <button
+                  key={target}
+                  className={"nav-item" + (page === target ? " active" : "")}
+                  aria-label={label}
+                  onClick={() => {
+                    setPage(target);
+                    setLeftOpen(false);
+                  }}
+                >
+                  <Icon size={17} strokeWidth={1.8} />
+                  <span>{label}</span>
+                  {page === target && <i />}
+                </button>
+              ))}
+            </nav>
+            <div className="drawer-system">
+              <span>SISTEMA</span>
               <div>
-                <strong>{assistant.toUpperCase()} ACTIVO</strong>
-                <small>{ekko ? "A tu ritmo" : "Modo operacional"}</small>
+                <span>CPU</span>
+                <strong>{system.cpu}%</strong>
+              </div>
+              <div>
+                <span>RAM</span>
+                <strong>{system.memory}%</strong>
+              </div>
+              <small>
+                <span className="online-dot" />{" "}
+                {apiMode === "mock" ? "Datos de muestra" : "Conectado"}
+              </small>
+            </div>
+            <div className="sidebar-spacer" />
+            <div className="sidebar-bottom">
+              <div className="sidebar-rule" />
+              <button
+                className={"nav-item" + (page === "activity" ? " active" : "")}
+                aria-label="Actividad"
+                onClick={() => {
+                  setPage("activity");
+                  setLeftOpen(false);
+                }}
+              >
+                <Activity size={17} />
+                <span>Actividad</span>
+                <em>{activity.length}</em>
+              </button>
+              <button
+                className={"nav-item" + (page === "settings" ? " active" : "")}
+                aria-label="Configuración"
+                onClick={() => {
+                  setPage("settings");
+                  setLeftOpen(false);
+                }}
+              >
+                <Settings2 size={17} />
+                <span>Configuración</span>
+              </button>
+              <div className="sidebar-presence">
+                <span className="presence-light" />
+                <div>
+                  <strong>{brand} ACTIVO</strong>
+                  <small>Listo para ayudarte</small>
+                </div>
               </div>
             </div>
-          </div>
-        </aside>
+          </aside>
+        )}
         <main className="workspace" id="main-content">
           {page === "home" && (
-            <div className="home-page cinematic-home">
-              <div className="home-topline">
-                <div className="home-wordmark">
-                  <strong>{assistant.toUpperCase()}</strong>
-                  <span>ASISTENTE DE INTELIGENCIA ARTIFICIAL</span>
+            <div className="home-page jarkko-home">
+              <div className="jarkko-home-head">
+                <div>
+                  <strong>JARKKO</strong>
+                  <span>INTELIGENCIA A TU ALCANCE</span>
                 </div>
-                <div className="home-clock">
-                  <span className="clock-icon"><Clock3 size={17} /></span>
-                  <div><strong>{clock.toLocaleTimeString("es-PE", { hour: "2-digit", minute: "2-digit", hourCycle: "h23" })}</strong><small>{clock.toLocaleDateString("es-PE", { weekday: "long", day: "numeric", month: "short" })}</small></div>
-                </div>
+                <span className="jarkko-home-time">
+                  {clock.toLocaleTimeString("es-PE", {
+                    hour: "2-digit",
+                    minute: "2-digit",
+                    hourCycle: "h23",
+                  })}
+                </span>
               </div>
-              <section className="hero">
-                <div className="hero-copy">
-                  <span className="hero-kicker">{ekko ? "TU DÍA, CON CLARIDAD" : "CONTROL Y CONTEXTO EN TIEMPO REAL"}</span>
-                  <h1>{ekko ? <>Hola,<br /><em>Sebastián.</em></> : <>Buenas tardes,<br /><em>Sebastián.</em></>}</h1>
-                  <p>{ekko ? "Todo en orden. ¿En qué te ayudo hoy?" : "¿En qué puedo ayudarte hoy?"}</p>
-                  <div className="quick-actions">
-                    {ekko ? (
-                      <>
-                        <button onClick={() => setPage("conversation")}><Command size={20}/><span>Continuar<br/>conversación</span></button>
-                        <button onClick={() => setPage("tasks")}><SquareCheckBig size={20}/><span>Revisar<br/>tareas</span></button>
-                        <button onClick={() => setPage("files")}><Files size={20}/><span>Buscar<br/>archivos</span></button>
-                        <button onClick={() => setPage("calendar")}><CalendarDays size={20}/><span>Organizar<br/>mi día</span></button>
-                      </>
-                    ) : (
-                      <>
-                        <button onClick={() => setPage("tools")}><Command size={20}/><span>Abrir<br/>aplicación</span></button>
-                        <button onClick={() => setPage("tools")}><Globe2 size={20}/><span>Buscar<br/>en la web</span></button>
-                        <button onClick={() => setPage("files")}><Files size={20}/><span>Gestionar<br/>archivos</span></button>
-                        <button onClick={() => setPage("knowledge")}><Sparkles size={20}/><span>Analizar<br/>información</span></button>
-                      </>
-                    )}
-                  </div>
-                </div>
-                <div className="hero-orb"><Orb status={status} /><span className="orb-caption">{statusText[status]}</span></div>
-                <div className="system-panel">
-                  <div className="system-head"><strong>{ekko ? "Estado del sistema" : "Sistema"}</strong><span><i className="online-dot"/> {apiMode === "mock" ? "Demo" : "Operativo"}</span></div>
-                  <div className="system-metrics">
-                    <div><span>CPU</span><strong>{system.cpu}%</strong><i><b style={{width:system.cpu + "%"}}/></i></div>
-                    <div><span>RAM</span><strong>{system.memory}%</strong><i><b style={{width:system.memory + "%"}}/></i></div>
-                    <div><span>DISCO</span><strong>61%</strong><i><b style={{width:"61%"}}/></i></div>
-                  </div>
-                  <button className="system-row" onClick={() => setPage("tasks")}><span className="system-row-icon urgent"><SquareCheckBig size={17}/></span><span><strong>{taskCounts.urgent} tarea prioritaria</strong><small>Requiere tu atención</small></span><ChevronRight size={16}/></button>
-                  <button className="system-row" onClick={() => setPage("calendar")}><span className="system-row-icon"><CalendarDays size={17}/></span><span><strong>3 reuniones hoy</strong><small>Próxima · 16:00</small></span><ChevronRight size={16}/></button>
-                  <button className="system-row" onClick={() => setPage(ekko ? "knowledge" : "files")}><span className="system-row-icon"><Files size={17}/></span><span><strong>{ekko ? "7 fuentes conectadas" : "12 archivos recientes"}</strong><small>{ekko ? "Contexto sincronizado" : "Ver actividad"}</small></span><ChevronRight size={16}/></button>
-                </div>
-              </section>
-              <div className="home-footer-note"><span className="online-dot"/>{ekko ? "EKKO está presente cuando lo necesites" : "JARVIS está listo para actuar"}<span className="note-line"/></div>
+              <div className="jarkko-stage">
+                <div className="jarkko-stage-light" />
+                <JarkkoOrb status={status} />
+                <span className="jarkko-stage-status">
+                  <span className="online-dot" /> {statusText[status]}
+                </span>
+              </div>
+              <div className="jarkko-home-foot">
+                <span>UN ESPACIO PARA PENSAR Y ACTUAR</span>
+                <span>01 / 01</span>
+              </div>
             </div>
           )}
           {page === "conversation" && (
             <div className="page-content conversation-page">
               <PageHeader
                 title="Conversación"
-                subtitle={
-                  "Un espacio para pensar y actuar con " +
-                  assistant.toUpperCase()
-                }
+                subtitle={"Un espacio para pensar y actuar con " + brand}
                 action={
                   <span className="subtle-badge">
                     <span className="online-dot" /> En línea
@@ -476,16 +526,12 @@ export function App() {
                 {messages.map((message) => (
                   <div className="thread-message" key={message.id}>
                     <span className={"thread-avatar " + message.role}>
-                      {message.role === "user"
-                        ? "T"
-                        : assistant[0].toUpperCase()}
+                      {message.role === "user" ? "T" : "J"}
                     </span>
                     <div>
                       <div className="thread-meta">
                         <strong>
-                          {message.role === "user"
-                            ? "Tú"
-                            : assistant.toUpperCase()}
+                          {message.role === "user" ? "Tú" : brand}
                         </strong>
                         <time>{message.time}</time>
                       </div>
@@ -792,7 +838,7 @@ export function App() {
               <div className="knowledge-grid">
                 {[
                   {
-                    title: "Proyecto JARVIS",
+                    title: "Proyecto JARKKO",
                     detail: "Diseño, arquitectura y decisiones del producto",
                     count: "8 documentos",
                     icon: Sparkles,
@@ -944,23 +990,12 @@ export function App() {
               <div className="settings-panel">
                 <div className="setting-row">
                   <div>
-                    <strong>Asistente</strong>
-                    <p>Elige la identidad que te acompaña.</p>
+                    <strong>Identidad</strong>
+                    <p>Una experiencia centrada en la esfera.</p>
                   </div>
-                  <div className="assistant-choice">
-                    <button
-                      className={!ekko ? "selected" : ""}
-                      onClick={() => setAssistant("jarvis")}
-                    >
-                      <span className="choice-dot jarvis-dot" /> JARVIS
-                    </button>
-                    <button
-                      className={ekko ? "selected" : ""}
-                      onClick={() => setAssistant("ekko")}
-                    >
-                      <span className="choice-dot ekko-dot" /> EKKO
-                    </button>
-                  </div>
+                  <span className="setting-value">
+                    JARKKO <Check size={15} />
+                  </span>
                 </div>
                 <div className="setting-row">
                   <div>
@@ -1032,148 +1067,157 @@ export function App() {
             </div>
           )}
         </main>
-        <aside className="assistant-panel">
-          <div className="assistant-panel-head">
-            <div>
-              <strong>
-                <span className="online-dot" />
-                {ekko ? "CONVERSA CON EKKO" : "JARVIS"}
-              </strong>
-              <small>
-                {apiMode === "mock" ? "Demo local" : "En línea"} ·{" "}
-                {statusText[status]}
-              </small>
-            </div>
-            <button
-              className="quiet-icon"
-              aria-label="Abrir conversación"
-              onClick={() => setPage("conversation")}
-            >
-              <MoreHorizontal size={19} />
-            </button>
-          </div>
-          <div className="assistant-feed" ref={feedRef}>
-            {messages.map((message) => (
-              <div className={"chat-message " + message.role} key={message.id}>
-                <div className="chat-meta">
-                  <strong>
-                    {message.role === "user" ? "Tú" : assistant.toUpperCase()}
-                  </strong>
-                  <time>{message.time}</time>
-                </div>
-                <div
-                  className={
-                    "chat-bubble" +
-                    (message.kind === "error" ? " chat-error" : "")
-                  }
-                >
-                  <p>{displayMessage(message)}</p>
-                  {message.kind === "plan" && (
-                    <ol className="chat-plan">
-                      <li>Reunir contexto relevante</li>
-                      <li>Revisar las acciones propuestas</li>
-                      <li>Ejecutar tras tu confirmación</li>
-                    </ol>
-                  )}
-                  {message.kind === "result" && (
-                    <span className="chat-result">
-                      <Check size={12} /> Resultado preparado
-                    </span>
-                  )}
-                  {message.kind === "summary" && (
-                    <>
-                      <div className="summary-details">
-                        <div>
-                          <strong>03</strong>
-                          <span>reuniones</span>
-                        </div>
-                        <div>
-                          <strong>01</strong>
-                          <span>prioridad</span>
-                        </div>
-                        <div>
-                          <strong>16:00</strong>
-                          <span>propuesta</span>
-                        </div>
-                      </div>
-                      <div className="chat-actions">
-                        <button onClick={() => setPage("calendar")}>
-                          Ver agenda completa <ArrowRight size={13} />
-                        </button>
-                        <button
-                          onClick={() => {
-                            setPage("tasks");
-                            showNotice("Crea un recordatorio desde Tareas.");
-                          }}
-                        >
-                          {ekko ? "Crear carpeta organizada" : "Crear recordatorio"} <ArrowRight size={13} />
-                        </button>
-                      </div>
-                    </>
-                  )}
-                  {message.kind === "file" && (
-                    <div className="chat-file">
-                      <FileText size={17} />
-                      <span>
-                        <strong>Reporte_Q3.pdf</strong>
-                        <small>PDF · 2,4 MB</small>
-                      </span>
-                      <button onClick={() => setPage("files")}>Ver</button>
-                    </div>
-                  )}
-                </div>
-              </div>
-            ))}
-          </div>
-          {confirmFile && (
-            <div className="confirmation-card">
-              <span>CONFIRMACIÓN REQUERIDA</span>
-              <strong>{pendingAction} archivo</strong>
-              <p>
-                {confirmFile.name}
-                <br />
-                {confirmFile.path}
-                {pendingAction === "Mover" && (
-                  <>
-                    {" "}
-                    <MoveRight size={12} /> Documentos / Organizados
-                  </>
-                )}
-              </p>
+        {rightOpen && (
+          <aside className="assistant-panel">
+            <div className="assistant-panel-head">
               <div>
-                <button onClick={() => confirmAction(false)}>Cancelar</button>
-                <button onClick={() => confirmAction(true)}>Confirmar</button>
+                <strong>
+                  <span className="online-dot" />
+                  JARKKO
+                </strong>
+                <small>
+                  {apiMode === "mock" ? "Demo local" : "En línea"} ·{" "}
+                  {statusText[status]}
+                </small>
               </div>
-            </div>
-          )}
-          <form className="assistant-compose" onSubmit={onSend}>
-            <div className="compose-field">
-              <input
-                aria-label="Mensaje para el asistente"
-                value={input}
-                onChange={(event) => setInput(event.target.value)}
-                placeholder={
-                  ekko
-                    ? "Escribe o habla con EKKO…"
-                    : "Escribe una instrucción…"
-                }
-              />
-              <button aria-label="Enviar mensaje" disabled={!input.trim()}>
-                <Send size={16} />
+              <button
+                className="quiet-icon"
+                aria-label="Cerrar conversación"
+                onClick={() => setRightOpen(false)}
+              >
+                <X size={19} />
               </button>
             </div>
-            <small>
-              <ShieldCheck size={13} /> Acciones críticas requieren confirmación
-            </small>
-          </form>
-        </aside>
+            <div className="assistant-feed" ref={feedRef}>
+              {messages.map((message) => (
+                <div
+                  className={"chat-message " + message.role}
+                  key={message.id}
+                >
+                  <div className="chat-meta">
+                    <strong>{message.role === "user" ? "Tú" : brand}</strong>
+                    <time>{message.time}</time>
+                  </div>
+                  <div
+                    className={
+                      "chat-bubble" +
+                      (message.kind === "error" ? " chat-error" : "")
+                    }
+                  >
+                    <p>{displayMessage(message)}</p>
+                    {message.kind === "plan" && (
+                      <ol className="chat-plan">
+                        <li>Reunir contexto relevante</li>
+                        <li>Revisar las acciones propuestas</li>
+                        <li>Ejecutar tras tu confirmación</li>
+                      </ol>
+                    )}
+                    {message.kind === "result" && (
+                      <span className="chat-result">
+                        <Check size={12} /> Resultado preparado
+                      </span>
+                    )}
+                    {message.kind === "summary" && (
+                      <>
+                        <div className="summary-details">
+                          <div>
+                            <strong>03</strong>
+                            <span>reuniones</span>
+                          </div>
+                          <div>
+                            <strong>01</strong>
+                            <span>prioridad</span>
+                          </div>
+                          <div>
+                            <strong>16:00</strong>
+                            <span>propuesta</span>
+                          </div>
+                        </div>
+                        <div className="chat-actions">
+                          <button onClick={() => setPage("calendar")}>
+                            Ver agenda completa <ArrowRight size={13} />
+                          </button>
+                          <button
+                            onClick={() => {
+                              setPage("tasks");
+                              showNotice("Crea un recordatorio desde Tareas.");
+                            }}
+                          >
+                            {ekko
+                              ? "Crear carpeta organizada"
+                              : "Crear recordatorio"}{" "}
+                            <ArrowRight size={13} />
+                          </button>
+                        </div>
+                      </>
+                    )}
+                    {message.kind === "file" && (
+                      <div className="chat-file">
+                        <FileText size={17} />
+                        <span>
+                          <strong>Reporte_Q3.pdf</strong>
+                          <small>PDF · 2,4 MB</small>
+                        </span>
+                        <button onClick={() => setPage("files")}>Ver</button>
+                      </div>
+                    )}
+                  </div>
+                </div>
+              ))}
+            </div>
+            {confirmFile && (
+              <div className="confirmation-card">
+                <span>CONFIRMACIÓN REQUERIDA</span>
+                <strong>{pendingAction} archivo</strong>
+                <p>
+                  {confirmFile.name}
+                  <br />
+                  {confirmFile.path}
+                  {pendingAction === "Mover" && (
+                    <>
+                      {" "}
+                      <MoveRight size={12} /> Documentos / Organizados
+                    </>
+                  )}
+                </p>
+                <div>
+                  <button onClick={() => confirmAction(false)}>Cancelar</button>
+                  <button onClick={() => confirmAction(true)}>Confirmar</button>
+                </div>
+              </div>
+            )}
+            <form className="assistant-compose" onSubmit={onSend}>
+              <div className="compose-field">
+                <input
+                  aria-label="Mensaje para el asistente"
+                  value={input}
+                  onChange={(event) => setInput(event.target.value)}
+                  placeholder={
+                    ekko
+                      ? "Escribe o habla con Jarkko…"
+                      : "Escribe una instrucción…"
+                  }
+                />
+                <button aria-label="Enviar mensaje" disabled={!input.trim()}>
+                  <Send size={16} />
+                </button>
+              </div>
+              <small>
+                <ShieldCheck size={13} /> Acciones críticas requieren
+                confirmación
+              </small>
+            </form>
+          </aside>
+        )}
       </div>
       <footer className={"voice-bar voice-" + status}>
         <div className="voice-label">
           <AudioLines size={18} />
           <span>
             {status === "idle"
-              ? (ekko ? "Habla con naturalidad…" : "Dime qué necesitas…")
+              ? ekko
+                ? "Habla con naturalidad…"
+                : "Dime qué necesitas…"
               : statusText[status]}
           </span>
         </div>
@@ -1233,7 +1277,3 @@ export function App() {
     </div>
   );
 }
-
-
-
-

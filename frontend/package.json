@@ -1,7 +1,7 @@
 {
-  "name": "jarvis-ekko-frontend",
+  "name": "jarkko-frontend",
   "private": true,
-  "version": "0.2.0",
+  "version": "0.3.0",
   "type": "module",
   "scripts": {
     "dev": "vite --host 127.0.0.1",
@@ -30,6 +30,6 @@
     "vite": "^6.0.5"
   },
   "main": "electron/main.cjs",
-  "description": "Asistente de escritorio JARVIS y EKKO",
+  "description": "Jarkko, asistente de escritorio",
   "author": "Sebastián"
 }

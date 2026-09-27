@@ -79,11 +79,11 @@ export const files: FileItem[] = [
   },
   {
     id: "f2",
-    name: "Diseño_Jarvis.fig",
+    name: "Diseño_Jarkko.fig",
     type: "FIG",
     size: "18,6 MB",
     modified: "Ayer, 17:26",
-    path: "Proyectos / Jarvis",
+    path: "Proyectos / Jarkko",
   },
   {
     id: "f3",
