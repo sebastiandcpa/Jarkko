@@ -27,3 +27,18 @@ def truncate(text: str, limit: int = 500) -> str:
     if len(text) <= limit:
         return text
     return f"{text[:limit]}… (+{len(text) - limit} caracteres)"
+
+
+def fold(text: str) -> str:
+    """Minúsculas sin tildes **conservando la longitud** carácter a carácter.
+
+    Permite ejecutar expresiones regulares sobre el texto normalizado y usar los
+    índices resultantes para recortar el texto ORIGINAL (con tildes y mayúsculas).
+    """
+
+    folded: list[str] = []
+    for char in text:
+        decomposed = unicodedata.normalize("NFD", char)
+        base = decomposed[0] if decomposed else char
+        folded.append(base.lower())
+    return "".join(folded)

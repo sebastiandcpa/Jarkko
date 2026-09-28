@@ -25,13 +25,8 @@
 .app-shell::before,
 :root[data-assistant="jarkko"] .app-shell::before {
   background-image:
-    linear-gradient(
-      90deg,
-      rgba(0, 8, 17, 0.3),
-      transparent 30% 70%,
-      rgba(0, 8, 17, 0.3)
-    ),
-    url("./assets/jarkko-chamber.png");
+    radial-gradient(ellipse 54% 36% at 50% 48%, rgba(67, 28, 9, 0.18), transparent 74%),
+    linear-gradient(180deg, #040304, #080506 62%, #030304);
   background-size: cover;
   background-position: center;
 }
@@ -400,6 +395,10 @@
   width: 100%;
   height: 100%;
   filter: drop-shadow(0 0 27px rgba(38, 166, 250, 0.3));
+  /* Los estados cambian el drop-shadow entero; sin transición el brillo daba un
+     salto seco al empezar a escuchar. */
+  transition: filter 0.45s ease;
+  will-change: transform;
 }
 .jarkko-orb img {
   position: relative;
@@ -478,7 +477,7 @@
   transition: opacity 0.35s ease;
 }
 .jarkko-orb--listening {
-  animation: jarkko-listening-morph 5.4s ease-in-out infinite alternate;
+  animation: jarkko-listening-morph 6.5s ease-in-out infinite alternate;
   filter: drop-shadow(0 0 42px rgba(52, 237, 216, 0.54));
 }
 .jarkko-orb--listening .jarkko-orb__voice-shape {
@@ -515,23 +514,42 @@
     transform: scale(1.025);
   }
 }
+/* La esfera respira: escala UNIFORME y simétrica.
+   Antes hacía squash & stretch (scaleX hasta 1.075 contra scaleY 0.955), que en
+   una esfera de ~600 px son unos 45 px de deformación: parecía gelatina, movía
+   la órbita de los satélites con ella y desenfocaba la imagen al estirarla en un
+   solo eje. Con una escala uniforme y pequeña se mantiene redonda y estable. */
 @keyframes jarkko-listening-morph {
-  0% {
-    transform: scaleX(1.015) scaleY(0.99);
+  from {
+    transform: scale(1);
   }
-  50% {
-    transform: scaleX(1.075) scaleY(0.955);
-  }
-  100% {
-    transform: scaleX(0.965) scaleY(1.055);
+  to {
+    transform: scale(1.022);
   }
 }
+/* El aro de energía se queda casi circular: las desviaciones grandes del 50%
+   bailaban contra el ritmo de la esfera y sumaban sensación de inestabilidad. */
 @keyframes jarkko-energy-shape {
-  0% {
-    border-radius: 47% 53% 51% 49% / 51% 46% 54% 49%;
+  from {
+    border-radius: 49% 51% 50% 50% / 50% 49% 51% 50%;
   }
-  100% {
-    border-radius: 55% 45% 47% 53% / 45% 55% 49% 51%;
+  to {
+    border-radius: 51% 49% 50% 50% / 50% 51% 49% 50%;
+  }
+}
+
+/* Este equipo tiene los efectos de animación de Windows apagados, así que la app
+   ve "reduce": se baja el recorrido en vez de congelar la escena. */
+@media (prefers-reduced-motion: reduce) {
+  .jarkko-orb--listening {
+    animation-duration: 9s;
+  }
+  .jarkko-orb__aura {
+    animation-duration: 16s;
+  }
+  .jarkko-orb--listening .jarkko-orb__voice-shape,
+  .jarkko-orb--listening .jarkko-orb__response {
+    animation: none;
   }
 }
 
@@ -591,6 +609,20 @@
     0 0 28px rgba(64, 230, 227, 0.85),
     inset 0 0 22px rgba(59, 207, 236, 0.28);
 }
+/* Escuchando: se mantiene el cristal y se sube la intensidad. La regla genérica
+   de styles.css pierde por especificidad frente a la de inicio, así que el
+   estado activo hay que declararlo también aquí o el botón no cambiaba. */
+.app-shell[data-page="home"] .voice-mic.listening {
+  border-color: #8df0ff;
+  background: rgba(4, 52, 78, 0.86);
+  box-shadow:
+    0 0 30px rgba(77, 219, 255, 0.85),
+    inset 0 0 24px rgba(70, 205, 245, 0.4);
+}
+.app-shell[data-page="home"] .voice-mic.listening::after {
+  inset: -7px;
+  border-color: rgba(125, 235, 255, 0.55);
+}
 .toast {
   z-index: 25;
   right: 25px;
@@ -635,5 +667,352 @@
   }
   .edge-control-right {
     right: 8px;
+  }
+}
+
+/* ECLIPSE is the product home. The original app handlers and drawers remain in App. */
+html,
+body,
+#root {
+  min-width: 0;
+}
+
+:root[data-assistant="jarkko"] {
+  --bg-primary: #030304;
+  --bg-secondary: #0b0808;
+  --surface: #17100d;
+  --surface-raised: #241711;
+  --surface-hover: #382117;
+  --border: #4b3022;
+  --border-soft: #2e201b;
+  --text-primary: #fff1e6;
+  --text-secondary: #cbb3a2;
+  --text-muted: #a38676;
+  --accent: #ffba7d;
+  --accent-soft: rgba(255, 154, 81, 0.13);
+  --accent-line: rgba(255, 173, 108, 0.37);
+  --glow: rgba(245, 132, 54, 0.28);
+  --success: #ffcc8e;
+  --scene-panel: rgba(17, 10, 8, 0.9);
+}
+
+.app-shell {
+  min-height: 0;
+  background: #030304;
+}
+.app-shell::before,
+:root[data-assistant="jarkko"] .app-shell::before {
+  background-image:
+    radial-gradient(ellipse 54% 36% at 50% 48%, rgba(67, 28, 9, 0.18), transparent 74%),
+    linear-gradient(180deg, #040304, #080506 62%, #030304);
+}
+.app-shell::after {
+  background: linear-gradient(90deg, rgba(0, 0, 0, 0.3), transparent 21% 79%, rgba(0, 0, 0, 0.3));
+}
+.page-content {
+  background: rgba(17, 10, 8, 0.88);
+  border-color: var(--accent-line);
+}
+
+.app-shell[data-page="home"] .edge-control {
+  top: 50%;
+  width: 45px;
+  height: 118px;
+  padding: 13px 0;
+  gap: 11px;
+  justify-content: center;
+  color: #ffe0c4;
+  border: 1px solid rgba(255, 178, 110, 0.42);
+  border-radius: 8px;
+  background: rgba(24, 13, 9, 0.78);
+  box-shadow: inset 0 0 22px rgba(255, 132, 53, 0.1), 0 8px 25px rgba(0, 0, 0, 0.24);
+  transform: translateY(-50%);
+}
+.app-shell[data-page="home"] .edge-control:hover {
+  color: #fff6e8;
+  border-color: rgba(255, 201, 151, 0.8);
+  background: rgba(62, 31, 17, 0.89);
+  transform: translateY(calc(-50% - 2px));
+}
+.app-shell[data-page="home"] .edge-control::after {
+  display: none;
+}
+.app-shell[data-page="home"] .edge-control-left {
+  left: 13px;
+}
+.app-shell[data-page="home"] .edge-control-right {
+  right: 13px;
+}
+.edge-control-label {
+  font-size: 8px;
+  letter-spacing: 0.17em;
+  writing-mode: vertical-rl;
+}
+.sidebar.expanded,
+.assistant-panel {
+  border-color: rgba(255, 174, 108, 0.42);
+  background: rgba(17, 10, 8, 0.96);
+}
+.sidebar.expanded {
+  overflow-y: auto;
+}
+.sidebar.expanded .sidebar-label,
+.drawer-system > span {
+  color: #d7a983;
+}
+.drawer-system {
+  border-color: var(--accent-line);
+  background: rgba(39, 20, 12, 0.58);
+}
+.drawer-system > div,
+.drawer-system small {
+  color: #dfbfa9;
+}
+.drawer-system strong {
+  color: #fff0dc;
+}
+.assistant-panel .chat-bubble {
+  background: rgba(46, 26, 17, 0.75);
+}
+.assistant-panel .chat-message.user .chat-bubble {
+  background: rgba(105, 50, 20, 0.35);
+}
+.assistant-panel .assistant-compose,
+.assistant-panel .compose-field {
+  background: rgba(29, 15, 10, 0.7);
+}
+
+.jarkko-home {
+  min-height: 0;
+  background: transparent;
+}
+.jarkko-home-head {
+  top: 31px;
+  left: clamp(76px, 7vw, 112px);
+  right: clamp(76px, 7vw, 112px);
+  align-items: flex-start;
+}
+.jarkko-home-head strong {
+  color: #fff1e8;
+  font-family: "DM Sans", Inter, sans-serif;
+  font-size: 19px;
+  font-weight: 400;
+  letter-spacing: 0.36em;
+}
+.jarkko-home-head span {
+  color: #d2a88a;
+  font-size: 9px;
+  letter-spacing: 0.16em;
+}
+.jarkko-home-head .jarkko-home-presence {
+  display: flex;
+  flex-direction: column;
+  align-items: flex-end;
+  gap: 8px;
+}
+.jarkko-home-head .jarkko-home-time {
+  color: #ffe4cd;
+  font-size: 18px;
+  letter-spacing: 0.06em;
+}
+.jarkko-home-live {
+  display: flex;
+  align-items: center;
+  gap: 7px;
+  text-transform: uppercase;
+}
+.jarkko-home-live i {
+  width: 5px;
+  height: 5px;
+  border-radius: 50%;
+  background: #ffb57a;
+  box-shadow: 0 0 10px #ff9e5d;
+}
+.jarkko-stage {
+  top: 47%;
+  width: max(100%, 850px);
+  height: min(780px, calc(100% - 90px));
+  aspect-ratio: auto;
+}
+.jarkko-orb {
+  position: relative;
+  width: 100%;
+  height: 100%;
+  filter: none;
+  transition: filter 1s ease;
+}
+.jarkko-orb .eclipse-visual,
+.jarkko-orb .eclipse-photo,
+.jarkko-orb .eclipse-canvas {
+  position: absolute;
+  inset: 0;
+  width: 100%;
+  height: 100%;
+  pointer-events: none;
+}
+.jarkko-orb .eclipse-photo {
+  z-index: 0;
+  object-fit: contain;
+  user-select: none;
+}
+.jarkko-orb .eclipse-canvas {
+  z-index: 1;
+  opacity: 0;
+  transition: opacity 0.7s ease;
+}
+.jarkko-orb .eclipse-canvas.is-ready {
+  opacity: 1;
+}
+.jarkko-orb--listening {
+  animation: none;
+  filter: none;
+}
+.jarkko-orb--listening .eclipse-photo {
+  filter: none;
+}
+.jarkko-orb--listening .eclipse-visual:not(:has(.eclipse-canvas.is-ready)) .eclipse-photo {
+  transform: scaleY(0.86);
+  transition: transform 3.8s ease;
+}
+.jarkko-orb--thinking,
+.jarkko-orb--planning,
+.jarkko-orb--executing {
+  filter: drop-shadow(0 0 20px rgba(255, 148, 67, 0.2));
+}
+.jarkko-orb--error {
+  filter: drop-shadow(0 0 16px rgba(255, 77, 55, 0.28));
+}
+.jarkko-home-foot {
+  left: 34px;
+  right: 34px;
+  bottom: 20px;
+  color: #9d7764;
+  font-size: 8px;
+  letter-spacing: 0.18em;
+}
+
+.app-shell[data-page="home"] .voice-bar {
+  bottom: 36px;
+  width: min(480px, calc(100% - 110px));
+  height: 67px;
+  padding: 0 13px 0 20px;
+  justify-content: space-between;
+  gap: 10px;
+  border: 1px solid rgba(255, 177, 108, 0.48);
+  border-radius: 40px;
+  background: rgba(24, 12, 8, 0.86);
+  backdrop-filter: blur(16px);
+  box-shadow: 0 0 27px rgba(226, 111, 39, 0.13), 0 16px 32px rgba(0, 0, 0, 0.3);
+}
+.app-shell[data-page="home"] .voice-label {
+  display: flex;
+  flex: 1;
+  min-width: 0;
+  color: #ebc2a5;
+  font-size: 11px;
+}
+.app-shell[data-page="home"] .voice-label svg,
+.app-shell[data-page="home"] .waveform.left {
+  display: none;
+}
+.app-shell[data-page="home"] .voice-center {
+  width: auto;
+  flex: 0 0 auto;
+  gap: 12px;
+}
+.app-shell[data-page="home"] .waveform.right {
+  width: 69px;
+  height: 28px;
+}
+.app-shell[data-page="home"] .waveform.right i {
+  background: #ffb874;
+  box-shadow: 0 0 8px rgba(255, 155, 81, 0.7);
+}
+.app-shell[data-page="home"] .voice-mic {
+  width: 49px;
+  height: 49px;
+  flex-basis: 49px;
+  color: #ffe2c3;
+  border: 2px solid #ffc48d;
+  background: radial-gradient(circle, #9d5d2b 0, #32190e 58%, #180d09 100%);
+  box-shadow: 0 0 18px rgba(255, 151, 76, 0.5), inset 0 0 12px rgba(255, 184, 114, 0.13);
+}
+.app-shell[data-page="home"] .voice-mic:hover,
+.app-shell[data-page="home"] .voice-mic.listening {
+  color: #fff5e9;
+  border-color: #ffe0ad;
+  background: radial-gradient(circle, #bb7538 0, #4a2511 58%, #1a0e09 100%);
+  box-shadow: 0 0 31px rgba(255, 176, 88, 0.83), inset 0 0 19px rgba(255, 183, 96, 0.28);
+}
+.app-shell[data-page="home"] .voice-mic.listening::after {
+  border-color: rgba(255, 191, 125, 0.55);
+}
+.app-shell[data-page="home"] .voice-mode {
+  display: none;
+}
+
+@media (max-width: 700px) {
+  .jarkko-home-head {
+    left: 70px;
+    right: 70px;
+    top: 24px;
+  }
+  .jarkko-home-head strong {
+    font-size: 15px;
+  }
+  .jarkko-home-head span {
+    font-size: 8px;
+  }
+  .jarkko-home-head .jarkko-home-time {
+    font-size: 15px;
+  }
+  .jarkko-stage {
+    width: 850px;
+    top: 46%;
+  }
+  .app-shell[data-page="home"] .voice-bar {
+    width: calc(100% - 80px);
+    bottom: 38px;
+  }
+  .app-shell[data-page="home"] .waveform.right {
+    width: 48px;
+  }
+  .jarkko-home-foot {
+    left: 18px;
+    right: 18px;
+    bottom: 15px;
+  }
+}
+
+@media (max-width: 460px) {
+  .jarkko-home-head {
+    left: 64px;
+    right: 64px;
+  }
+  .jarkko-home-head > div:first-child span {
+    max-width: 160px;
+    line-height: 1.5;
+  }
+  .jarkko-home-live {
+    font-size: 7px;
+  }
+  .app-shell[data-page="home"] .edge-control {
+    width: 38px;
+    height: 107px;
+  }
+  .app-shell[data-page="home"] .edge-control-left {
+    left: 7px;
+  }
+  .app-shell[data-page="home"] .edge-control-right {
+    right: 7px;
+  }
+  .app-shell[data-page="home"] .voice-bar {
+    width: calc(100% - 36px);
+  }
+  .app-shell[data-page="home"] .waveform.right {
+    width: 35px;
+  }
+  .jarkko-home-foot span:last-child {
+    display: none;
   }
 }

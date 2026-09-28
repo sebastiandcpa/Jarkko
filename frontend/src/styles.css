@@ -1251,8 +1251,9 @@ input:focus-visible {
 .waveform {
   display: flex;
   align-items: center;
+  justify-content: center;
   gap: 2px;
-  width: 95px;
+  width: 98px;
   height: 33px;
   overflow: hidden;
 }
@@ -1260,36 +1261,62 @@ input:focus-visible {
   transform: scaleX(-1);
 }
 .waveform i {
+  --wave-floor: 0.55;
   width: 2px;
   flex: 0 0 2px;
   border-radius: 3px;
   background: var(--accent);
   opacity: 0.4;
-  animation: wave 2.2s ease-in-out infinite alternate;
+  /* La duración es la MISMA en todos los estados a propósito: cambiarla obligaba
+     a las 25 barras a recalcular su fase a la vez y producía un salto feo justo
+     al pulsar el micro. Entre estados solo cambia la amplitud y el brillo, así
+     que la onda acelera sin romperse. */
+  animation: wave 1.6s ease-in-out infinite alternate;
 }
 .voice-idle .waveform i {
-  animation-duration: 3.8s;
+  --wave-floor: 0.72;
   opacity: 0.25;
 }
 .voice-listening .waveform i {
-  animation-duration: 0.65s;
-  opacity: 0.9;
+  --wave-floor: 0.2;
+  opacity: 0.95;
 }
 .voice-thinking .waveform i {
-  animation-duration: 1.1s;
+  --wave-floor: 0.45;
   opacity: 0.7;
 }
 .voice-executing .waveform i {
-  animation-duration: 0.4s;
+  --wave-floor: 0.32;
   opacity: 0.85;
 }
 @keyframes wave {
   to {
-    transform: scaleY(0.28);
+    transform: scaleY(var(--wave-floor));
     opacity: 0.15;
   }
 }
+/* Este equipo tiene los efectos de animación de Windows desactivados, así que la
+   app ve "reduce". Apagar la onda del todo la dejaba muerta y parecía rota: se
+   suaviza (más lenta y con menos recorrido) en vez de congelarla. */
+@media (prefers-reduced-motion: reduce) {
+  .waveform i {
+    animation-duration: 3.4s;
+  }
+  .voice-idle .waveform i {
+    --wave-floor: 0.85;
+  }
+  .voice-listening .waveform i {
+    --wave-floor: 0.5;
+  }
+  .voice-thinking .waveform i {
+    --wave-floor: 0.66;
+  }
+  .voice-executing .waveform i {
+    --wave-floor: 0.58;
+  }
+}
 .voice-mic {
+  position: relative;
   width: 52px;
   height: 52px;
   flex: 0 0 auto;
@@ -1302,6 +1329,7 @@ input:focus-visible {
   box-shadow: 0 0 18px var(--glow);
   transition:
     background 0.2s,
+    box-shadow 0.2s,
     transform 0.2s;
 }
 .voice-mic:hover {
@@ -1309,15 +1337,40 @@ input:focus-visible {
   transform: scale(1.05);
 }
 .voice-mic.listening {
-  color: var(--bg-primary);
-  background: var(--accent);
-  animation: mic-pulse 1.4s ease-in-out infinite;
+  /* Antes se pintaba un disco liso que borraba el cristal y el brillo del botón.
+     Ahora se intensifica lo que ya hay en vez de sustituirlo. */
+  color: var(--accent);
+  background: var(--accent-soft);
+  box-shadow:
+    0 0 26px var(--glow),
+    inset 0 0 14px var(--accent-soft);
 }
-@keyframes mic-pulse {
-  50% {
-    box-shadow:
-      0 0 0 7px var(--accent-soft),
-      0 0 18px var(--glow);
+/* El pulso va en un pseudo-elemento fuera de flujo: así no empuja a las barras
+   ni reemplaza el box-shadow del botón (antes el anillo de 7px se comía los 9px
+   de separación y parecía que se tocaban). */
+.voice-mic.listening::after {
+  content: "";
+  position: absolute;
+  inset: -5px;
+  border: 1px solid var(--accent-line);
+  border-radius: 50%;
+  pointer-events: none;
+  animation: mic-ring 1.6s ease-out infinite;
+}
+@keyframes mic-ring {
+  from {
+    transform: scale(0.95);
+    opacity: 0.85;
+  }
+  to {
+    transform: scale(1.22);
+    opacity: 0;
+  }
+}
+@media (prefers-reduced-motion: reduce) {
+  .voice-mic.listening::after {
+    animation: none;
+    opacity: 0.6;
   }
 }
 .voice-mode {
@@ -2239,13 +2292,25 @@ input:focus-visible {
     grid-template-columns: repeat(2, 1fr);
   }
 }
+/* Respetar "reducir movimiento" sin dejar la interfaz muerta.
+   El reset general (todo a 0.01ms con !important) apagaba también las
+   transiciones, así que cada cambio de estado daba un salto seco, y congelaba la
+   esfera y la onda de voz: en un asistente cuya identidad es el movimiento
+   ambiental, eso se ve roto, no accesible.
+   Aquí se quita el movimiento que molesta de verdad —desplazamientos largos y
+   scroll animado— y se conservan las transiciones cortas y el latido ambiental,
+   que cada componente ya reduce en su propio bloque de reduced-motion. */
 @media (prefers-reduced-motion: reduce) {
   *,
   *:before,
   *:after {
-    animation-duration: 0.01ms !important;
-    transition-duration: 0.01ms !important;
     scroll-behavior: auto !important;
+  }
+  .toast,
+  [class*="slide"],
+  [class*="marquee"] {
+    animation-duration: 0.01ms !important;
+    transition-duration: 0.12s !important;
   }
 }
 

@@ -156,9 +156,10 @@ def find_app(name: str) -> AppSpec | None:
     key = normalize(name)
     if key in _INDEX:
         return _INDEX[key]
-    # Coincidencia parcial: "abre el bloc de notas de windows"
-    for alias, spec in _INDEX.items():
-        if len(alias) >= 4 and (alias in key or key in alias):
+    # Coincidencia parcial: "el bloc de notas de windows" contiene "bloc de notas".
+    # Solo en esta dirección: así "google" no resuelve a "google chrome" (es un sitio web).
+    for alias, spec in sorted(_INDEX.items(), key=lambda item: -len(item[0])):
+        if len(alias) >= 4 and alias in key:
             return spec
     return None
 

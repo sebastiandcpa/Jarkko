@@ -94,6 +94,10 @@ const timeNow = () =>
     minute: "2-digit",
     hourCycle: "h23",
   });
+const metric = (value: unknown, fallback: number) =>
+  typeof value === "number" && Number.isFinite(value)
+    ? Math.round(value)
+    : fallback;
 const id = () => crypto.randomUUID();
 const bars = Array.from(
   { length: 25 },
@@ -170,17 +174,35 @@ export function App() {
       .then(setSystem)
       .catch(() => {});
     return connectEvents((event: BackendEvent) => {
-      if (
-        event.type === "assistant.status" &&
-        typeof event.payload === "string"
-      )
-        setStatus(event.payload as AssistantStatus);
+      if (event.type === "connection.status") {
+        setSystem((previous) => ({ ...previous, online: event.payload === true }));
+      }
+      if (event.type === "assistant.status") {
+        const state =
+          typeof event.payload === "string"
+            ? event.payload
+            : event.payload && typeof event.payload === "object"
+              ? (event.payload as { status?: unknown }).status
+              : null;
+        if (typeof state === "string" && state in statusText)
+          setStatus(state as AssistantStatus);
+      }
       if (
         event.type === "system.status" &&
         event.payload &&
         typeof event.payload === "object"
-      )
-        setSystem(event.payload as typeof system);
+      ) {
+        const snapshot = event.payload as Record<string, unknown>;
+        setSystem((previous) => ({
+          cpu: metric(snapshot.cpu_percent ?? snapshot.cpu, previous.cpu),
+          memory: metric(
+            snapshot.memory_percent ?? snapshot.memory,
+            previous.memory,
+          ),
+          sync: true,
+          online: true,
+        }));
+      }
       if (event.type === "confirmation.required")
         setStatus("waiting_confirmation");
       if (event.type === "action.completed")
@@ -211,8 +233,13 @@ export function App() {
     try {
       const answer = await api.chat(clean, assistant);
       setMessages((previous) => [...previous, answer]);
-      addActivity("Consulta procesada", clean, "success");
-      setStatus("success");
+      const failed = answer.kind === "error";
+      addActivity(
+        failed ? "Consulta sin respuesta" : "Consulta procesada",
+        clean,
+        failed ? "error" : "success",
+      );
+      setStatus(failed ? "error" : "success");
     } catch {
       setMessages((previous) => [
         ...previous,
@@ -318,12 +345,8 @@ export function App() {
       >
         {page === "home" ? (
           <>
-            <span className="edge-ring" />
-            <span className="edge-dots">
-              <i />
-              <i />
-              <i />
-            </span>
+            <LayoutGrid size={19} strokeWidth={1.6} />
+            <span className="edge-control-label">EXPLORAR</span>
           </>
         ) : (
           <Menu size={21} />
@@ -340,12 +363,8 @@ export function App() {
       >
         {page === "home" ? (
           <>
-            <span className="edge-ring edge-ring-inner" />
-            <span className="edge-dots">
-              <i />
-              <i />
-              <i />
-            </span>
+            <Command size={19} strokeWidth={1.6} />
+            <span className="edge-control-label">CONVERSAR</span>
           </>
         ) : (
           <Command size={21} />
@@ -446,26 +465,27 @@ export function App() {
               <div className="jarkko-home-head">
                 <div>
                   <strong>JARKKO</strong>
-                  <span>INTELIGENCIA A TU ALCANCE</span>
+                  <span>TODO GIRA ALREDEDOR DE TUS IDEAS</span>
                 </div>
-                <span className="jarkko-home-time">
-                  {clock.toLocaleTimeString("es-PE", {
-                    hour: "2-digit",
-                    minute: "2-digit",
-                    hourCycle: "h23",
-                  })}
-                </span>
+                <div className="jarkko-home-presence">
+                  <span className="jarkko-home-time">
+                    {clock.toLocaleTimeString("es-PE", {
+                      hour: "2-digit",
+                      minute: "2-digit",
+                      hourCycle: "h23",
+                    })}
+                  </span>
+                  <span className="jarkko-home-live">
+                    <i /> {statusText[status]}
+                  </span>
+                </div>
               </div>
               <div className="jarkko-stage">
-                <div className="jarkko-stage-light" />
                 <JarkkoOrb status={status} />
-                <span className="jarkko-stage-status">
-                  <span className="online-dot" /> {statusText[status]}
-                </span>
               </div>
               <div className="jarkko-home-foot">
-                <span>UN ESPACIO PARA PENSAR Y ACTUAR</span>
-                <span>01 / 01</span>
+                <span>CAMBIA EL CENTRO DE GRAVEDAD</span>
+                <span>JARKKO / ASISTENTE</span>
               </div>
             </div>
           )}

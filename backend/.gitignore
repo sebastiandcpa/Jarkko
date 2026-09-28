@@ -1,0 +1,22 @@
+# entorno
+.venv/
+venv/
+env/
+
+# secretos y configuración local
+.env
+
+# python
+__pycache__/
+*.py[cod]
+*.egg-info/
+.pytest_cache/
+.mypy_cache/
+.ruff_cache/
+
+# datos locales del asistente
+data/
+*.db
+*.db-shm
+*.db-wal
+*.log
